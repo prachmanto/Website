@@ -336,7 +336,6 @@ body {
 <div class="status-bar">
   <div class="status-pill"><div class="dot" id="dot-online"></div><span id="pill-online">Checking...</span></div>
   <div class="status-pill"><div class="dot blue" id="dot-pub"></div><span id="pill-pub">Public IP: —</span></div>
-  <div class="status-pill"><div class="dot" id="dot-local"></div><span id="pill-local">Local IP: —</span></div>
   <div class="status-pill"><div class="dot" id="dot-ping"></div><span id="pill-ping">Latency: —</span></div>
 </div>
 
@@ -359,19 +358,6 @@ body {
     <button class="action-btn" onclick="getPublicIP()">↻ Refresh</button>
   </div>
 
-  <!-- LOCAL IP -->
-  <div class="card" style="--card-color:#00ff88">
-    <div class="card-header">
-      <span class="card-icon">🏠</span>
-      <div class="card-title">Local IP — WebRTC Leak<span>Internal Network</span></div>
-    </div>
-    <div class="big-val v-green" id="local-ip">—</div>
-    <div class="stat"><span class="stat-label">Method</span><span class="stat-value v-green">WebRTC RTCPeerConnection</span></div>
-    <div class="stat"><span class="stat-label">All Local IPs</span><span class="stat-value v-green" id="all-local-ips">—</span></div>
-    <div class="stat"><span class="stat-label">Type</span><span class="stat-value v-green" id="local-type">—</span></div>
-    <div class="stat"><span class="stat-label">Note</span><span class="stat-value v-green" style="font-size:0.68rem">Private range only. Full IP hidden by browser sandbox.</span></div>
-    <button class="action-btn" style="border-color:var(--accent2);color:var(--accent2)" onclick="getLocalIP()">↻ Detect</button>
-  </div>
 
   <!-- CONNECTION INFO -->
   <div class="card" style="--card-color:#c084fc">
@@ -434,41 +420,7 @@ body {
     <button class="action-btn" style="border-color:var(--accent3);color:var(--accent3)" id="port-btn" onclick="runPortScan()">▶ Scan Ports</button>
   </div>
 
-  <!-- WEBSOCKET TEST -->
-  <div class="card span2" style="--card-color:#00e5ff">
-    <div class="card-header">
-      <span class="card-icon">🔗</span>
-      <div class="card-title">WebSocket Connection Test<span>detik.com : 443 (WSS)</span></div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.8rem;margin-bottom:0.8rem">
-      <div class="stat" style="flex-direction:column;align-items:flex-start;gap:0.2rem;border:none;padding:0.5rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:8px">
-        <span class="stat-label">Target Host</span>
-        <span class="stat-value v-blue">detik.com</span>
-      </div>
-      <div class="stat" style="flex-direction:column;align-items:flex-start;gap:0.2rem;border:none;padding:0.5rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:8px">
-        <span class="stat-label">Port</span>
-        <span class="stat-value v-blue">443 (WSS)</span>
-      </div>
-      <div class="stat" style="flex-direction:column;align-items:flex-start;gap:0.2rem;border:none;padding:0.5rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:8px">
-        <span class="stat-label">Protocol</span>
-        <span class="stat-value v-blue">WebSocket Secure</span>
-      </div>
-      <div class="stat" style="flex-direction:column;align-items:flex-start;gap:0.2rem;border:none;padding:0.5rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:8px">
-        <span class="stat-label">Status</span>
-        <span class="stat-value" id="ws-status-val" style="color:var(--muted)">Not tested</span>
-      </div>
-      <div class="stat" style="flex-direction:column;align-items:flex-start;gap:0.2rem;border:none;padding:0.5rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:8px">
-        <span class="stat-label">Connect Time</span>
-        <span class="stat-value v-blue" id="ws-time">—</span>
-      </div>
-      <div class="stat" style="flex-direction:column;align-items:flex-start;gap:0.2rem;border:none;padding:0.5rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:8px">
-        <span class="stat-label">Attempts</span>
-        <span class="stat-value v-blue" id="ws-attempts">0</span>
-      </div>
-    </div>
-    <div class="ws-log" id="ws-log"><span class="info">[READY] WebSocket test engine initialized. Click below to test.</span></div>
-    <button class="action-btn" id="ws-btn" onclick="runWSTest()">▶ Test WebSocket → wss://detik.com:443</button>
-  </div>
+
 
 </div>
 
@@ -478,12 +430,6 @@ body {
 // ── HELPERS ────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 const ts = () => new Date().toLocaleTimeString();
-
-function wsLog(msg, cls='info') {
-  const log = $('ws-log');
-  log.innerHTML += `\n<span class="ts">[${ts()}]</span> <span class="${cls}">${msg}</span>`;
-  log.scrollTop = log.scrollHeight;
-}
 
 // ── ONLINE STATUS ─────────────────────────────────────────────────────
 function updateOnline() {
@@ -729,81 +675,6 @@ async function runPortScan() {
   btn.disabled = false;
 }
 
-// ── WEBSOCKET TEST ────────────────────────────────────────────────────
-let wsAttempts = 0;
-function runWSTest() {
-  const btn = $('ws-btn');
-  btn.disabled = true;
-  wsAttempts++;
-  $('ws-attempts').textContent = wsAttempts;
-  $('ws-status-val').textContent = 'Connecting...';
-  $('ws-status-val').style.color = 'var(--warn)';
-  $('ws-time').textContent = '—';
-
-  wsLog('Initiating WebSocket connection to wss://detik.com:443', 'info');
-  wsLog('Protocol: WSS (WebSocket Secure over TLS)', 'info');
-
-  const t0 = performance.now();
-  let ws;
-  try {
-    ws = new WebSocket('wss://detik.com');
-    wsLog('WebSocket object created. Waiting for handshake...', 'info');
-
-    ws.onopen = () => {
-      const ms = Math.round(performance.now() - t0);
-      $('ws-time').textContent = ms + ' ms';
-      $('ws-status-val').textContent = 'Connected ✅';
-      $('ws-status-val').style.color = 'var(--accent2)';
-      wsLog(`Connection ESTABLISHED in ${ms}ms`, 'ok');
-      wsLog('Handshake successful. Port 443 is open and WebSocket-capable.', 'ok');
-      wsLog('Sending ping frame...', 'info');
-      try { ws.send('ping'); } catch{}
-      setTimeout(() => {
-        ws.close(1000, 'Test complete');
-        wsLog('Connection closed gracefully (code 1000).', 'info');
-      }, 1500);
-      btn.disabled = false;
-    };
-
-    ws.onerror = (e) => {
-      const ms = Math.round(performance.now() - t0);
-      $('ws-time').textContent = ms + ' ms';
-      wsLog('Connection error — detik.com may not support WebSocket protocol', 'warn');
-      wsLog(`Note: Port 443 is reachable (HTTPS works) but WebSocket upgrade was rejected.`, 'warn');
-      wsLog('This is NORMAL — most websites only support HTTP/HTTPS, not WebSocket.', 'info');
-      wsLog('Result: TCP port 443 is OPEN, WebSocket protocol: NOT SUPPORTED', 'warn');
-      $('ws-status-val').textContent = 'Port Open, WS Rejected ⚠️';
-      $('ws-status-val').style.color = 'var(--warn)';
-      btn.disabled = false;
-    };
-
-    ws.onclose = (e) => {
-      wsLog(`Socket closed — code: ${e.code}, reason: "${e.reason || 'none'}"`, e.code === 1000 ? 'ok' : 'info');
-    };
-
-    ws.onmessage = (e) => {
-      wsLog(`Message received: ${e.data}`, 'ok');
-    };
-
-    // timeout fallback
-    setTimeout(() => {
-      if (ws.readyState !== 1 && ws.readyState !== 3) {
-        ws.close();
-        $('ws-status-val').textContent = 'Timeout ⏱️';
-        $('ws-status-val').style.color = 'var(--accent3)';
-        wsLog('Connection timed out after 8 seconds.', 'err');
-        btn.disabled = false;
-      }
-    }, 8000);
-
-  } catch(e) {
-    wsLog('Failed to create WebSocket: ' + e.message, 'err');
-    $('ws-status-val').textContent = 'Error ❌';
-    $('ws-status-val').style.color = 'var(--red)';
-    btn.disabled = false;
-  }
-}
-
 // ── RUN ALL ───────────────────────────────────────────────────────────
 async function runAllTests() {
   const btn = $('scan-btn');
@@ -812,12 +683,10 @@ async function runAllTests() {
   btn.classList.add('running');
 
   updateConnectionInfo();
-  getLocalIP();
   await getPublicIP();
   await runPing();
   await runDNS();
   await runPortScan();
-  runWSTest();
 
   btn.disabled = false;
   btn.textContent = '↻ Re-run Full Scan';
