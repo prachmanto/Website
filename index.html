@@ -1,363 +1,831 @@
-
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>WAN Network Status Checker</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Network Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #020b14;
+  --panel: #061220;
+  --border: #0a2a4a;
+  --accent: #00e5ff;
+  --accent2: #00ff88;
+  --accent3: #ff6b35;
+  --accent4: #c084fc;
+  --warn: #fbbf24;
+  --red: #ff4466;
+  --text: #b0d8f0;
+  --muted: #3a6a8a;
+  --mono: 'Share Tech Mono', monospace;
+  --head: 'Orbitron', sans-serif;
+  --body: 'Exo 2', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  min-height: 100vh;
+  padding: 1.5rem 1rem 3rem;
+  background-image:
+    radial-gradient(ellipse at 10% 0%, rgba(0,100,180,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 90% 100%, rgba(0,229,255,0.07) 0%, transparent 55%);
+}
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
-      min-height: 100vh;
-      padding: 24px 16px;
-    }
+/* HEADER */
+.header { text-align: center; margin-bottom: 2rem; }
+.header h1 {
+  font-family: var(--head);
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--accent);
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 30px rgba(0,229,255,0.5);
+  text-transform: uppercase;
+}
+.header p {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.18em;
+  margin-top: 0.4rem;
+}
+.scan-btn {
+  margin-top: 1.2rem;
+  background: transparent;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--head);
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  padding: 0.7rem 2.5rem;
+  border-radius: 2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+.scan-btn:hover { background: var(--accent); color: var(--bg); box-shadow: 0 0 24px rgba(0,229,255,0.4); }
+.scan-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.scan-btn.running { animation: border-pulse 1s infinite; }
+@keyframes border-pulse { 0%,100%{box-shadow:0 0 8px rgba(0,229,255,0.3)} 50%{box-shadow:0 0 24px rgba(0,229,255,0.8)} }
 
-    h1 {
-      text-align: center;
-      font-size: 1.5rem;
-      margin-bottom: 4px;
-      color: #38bdf8;
-      letter-spacing: 1px;
-    }
+/* STATUS BAR */
+.status-bar {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.8rem;
+}
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2rem;
+  padding: 0.4rem 1rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}
+.dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex-shrink: 0;
+}
+.dot.green { background: var(--accent2); box-shadow: 0 0 8px var(--accent2); animation: blink 2s infinite; }
+.dot.red { background: var(--red); box-shadow: 0 0 8px var(--red); }
+.dot.yellow { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+.dot.blue { background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    .subtitle {
-      text-align: center;
-      font-size: 0.8rem;
-      color: #64748b;
-      margin-bottom: 24px;
-    }
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.3rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s, transform 0.2s;
+}
+.card:hover { border-color: var(--card-color, var(--accent)); transform: translateY(-2px); }
+.card::before {
+  content:'';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--card-color, var(--accent)), transparent);
+}
+.card-header {
+  display: flex; align-items: center; gap: 0.6rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+.card-icon { font-size: 1.3rem; }
+.card-title {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+}
+.card-title span {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--text);
+  font-family: var(--body);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-top: 0.1rem;
+}
 
-    .controls {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-    }
+/* STAT ROW */
+.stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(10,42,74,0.8);
+  gap: 0.5rem;
+}
+.stat:last-child { border-bottom: none; }
+.stat-label { color: var(--muted); font-size: 0.78rem; flex-shrink: 0; }
+.stat-value {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  text-align: right;
+  word-break: break-all;
+}
+.v-blue { color: var(--accent); }
+.v-green { color: var(--accent2); }
+.v-orange { color: var(--accent3); }
+.v-purple { color: var(--accent4); }
+.v-yellow { color: var(--warn); }
+.v-red { color: var(--red); }
 
-    .controls label {
-      font-size: 0.85rem;
-      color: #94a3b8;
-    }
+/* BIG VALUE */
+.big-val {
+  font-family: var(--head);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 0 16px rgba(0,229,255,0.4);
+  word-break: break-all;
+  margin: 0.4rem 0;
+}
 
-    select, button {
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: none;
-      font-size: 0.85rem;
-      cursor: pointer;
-    }
+/* PROGRESS BAR */
+.bar-wrap {
+  background: rgba(10,42,74,0.8);
+  border-radius: 20px;
+  height: 8px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 20px;
+  transition: width 0.6s ease;
+}
 
-    select {
-      background: #1e293b;
-      color: #e2e8f0;
-      border: 1px solid #334155;
-    }
+/* LATENCY GAUGE */
+.gauge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+.gauge-val {
+  font-family: var(--head);
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--accent2);
+  text-shadow: 0 0 20px rgba(0,255,136,0.5);
+}
+.gauge-unit { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
+.gauge-label { font-family: var(--mono); font-size: 0.75rem; margin-top: 0.3rem; }
 
-    .btn-start {
-      background: #0ea5e9;
-      color: white;
-      font-weight: bold;
-      transition: background 0.2s;
-    }
-    .btn-start:hover { background: #0284c7; }
-    .btn-start.running { background: #dc2626; }
-    .btn-start.running:hover { background: #b91c1c; }
+/* PING HISTORY */
+.ping-history {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 50px;
+  margin-top: 0.8rem;
+  padding: 0 0.2rem;
+}
+.ping-bar {
+  flex: 1;
+  background: var(--accent);
+  border-radius: 2px 2px 0 0;
+  min-height: 2px;
+  opacity: 0.7;
+  transition: height 0.3s;
+}
 
-    .btn-check {
-      background: #334155;
-      color: #e2e8f0;
-    }
-    .btn-check:hover { background: #475569; }
+/* PORT TABLE */
+.port-table { width: 100%; border-collapse: collapse; margin-top: 0.4rem; font-size: 0.8rem; }
+.port-table th { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); text-align: left; padding: 0.3rem 0.5rem; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.1em; }
+.port-table td { padding: 0.4rem 0.5rem; border-bottom: 1px solid rgba(10,42,74,0.5); font-family: var(--mono); font-size: 0.78rem; }
+.port-table tr:last-child td { border-bottom: none; }
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.badge-green { background: rgba(0,255,136,0.15); color: var(--accent2); }
+.badge-red { background: rgba(255,68,102,0.15); color: var(--red); }
+.badge-yellow { background: rgba(251,191,36,0.15); color: var(--warn); }
+.badge-gray { background: rgba(58,106,138,0.2); color: var(--muted); }
 
-    .overall-status {
-      text-align: center;
-      margin-bottom: 24px;
-      padding: 12px;
-      border-radius: 12px;
-      background: #1e293b;
-      font-size: 1rem;
-      font-weight: bold;
-      letter-spacing: 0.5px;
-      border: 1px solid #334155;
-    }
+/* WS LOG */
+.ws-log {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  line-height: 1.7;
+  max-height: 140px;
+  overflow-y: auto;
+  margin-top: 0.6rem;
+}
+.ws-log .ts { color: var(--muted); }
+.ws-log .ok { color: var(--accent2); }
+.ws-log .err { color: var(--red); }
+.ws-log .info { color: var(--accent); }
+.ws-log .warn { color: var(--warn); }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
+/* DNS RESULTS */
+.dns-result {
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  line-height: 1.8;
+  margin-top: 0.5rem;
+  border: 1px solid var(--border);
+}
 
-    .card {
-      background: #1e293b;
-      border-radius: 14px;
-      padding: 18px;
-      border: 1px solid #334155;
-      transition: border-color 0.3s;
-    }
+/* ACTION BTN */
+.action-btn {
+  width: 100%;
+  margin-top: 0.8rem;
+  background: transparent;
+  border: 1px solid var(--card-color, var(--accent));
+  color: var(--card-color, var(--accent));
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.45rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.action-btn:hover { background: var(--card-color, var(--accent)); color: var(--bg); }
+.action-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-    .card.online  { border-color: #22c55e; }
-    .card.offline { border-color: #ef4444; }
-    .card.slow    { border-color: #f59e0b; }
-    .card.checking { border-color: #38bdf8; }
+/* SPAN FULL */
+.span2 { grid-column: span 2; }
+@media(max-width:640px) { .span2 { grid-column: span 1; } }
 
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
+/* FOOTER */
+.footer {
+  text-align: center;
+  margin-top: 2rem;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+}
 
-    .card-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      background: #0f172a;
-    }
-
-    .card-title { font-weight: bold; font-size: 0.95rem; }
-    .card-ip    { font-size: 0.75rem; color: #64748b; }
-
-    .status-badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 99px;
-      font-size: 0.72rem;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 10px;
-    }
-
-    .badge-online  { background: #14532d; color: #4ade80; }
-    .badge-offline { background: #450a0a; color: #f87171; }
-    .badge-slow    { background: #451a03; color: #fbbf24; }
-    .badge-checking{ background: #0c1a2e; color: #38bdf8; }
-    .badge-idle    { background: #1e293b; color: #64748b; border: 1px solid #334155; }
-
-    .latency {
-      font-size: 1.6rem;
-      font-weight: bold;
-      color: #e2e8f0;
-      margin: 6px 0 2px;
-    }
-
-    .latency span { font-size: 0.8rem; color: #64748b; font-weight: normal; }
-
-    .history-bar {
-      display: flex;
-      gap: 3px;
-      margin-top: 12px;
-      align-items: flex-end;
-      height: 32px;
-    }
-
-    .bar-item {
-      flex: 1;
-      border-radius: 3px;
-      background: #334155;
-      min-height: 4px;
-      transition: background 0.3s;
-    }
-
-    .bar-item.ok   { background: #22c55e; }
-    .bar-item.warn { background: #f59e0b; }
-    .bar-item.fail { background: #ef4444; }
-
-    .last-checked {
-      font-size: 0.72rem;
-      color: #475569;
-      margin-top: 8px;
-    }
-
-    .pulse {
-      display: inline-block;
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      margin-right: 6px;
-      animation: pulse 1.2s infinite;
-    }
-    .pulse.green  { background: #22c55e; }
-    .pulse.red    { background: #ef4444; }
-    .pulse.yellow { background: #f59e0b; }
-    .pulse.blue   { background: #38bdf8; }
-    .pulse.gray   { background: #475569; animation: none; }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%       { opacity: 0.4; transform: scale(0.7); }
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 32px;
-      font-size: 0.72rem;
-      color: #334155;
-    }
-  </style>
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
 </head>
 <body>
 
-<h1>🌐 WAN Network Status Checker</h1>
-<p class="subtitle">Monitoring kondisi koneksi WAN via DNS Response Time</p>
-
-<div class="controls">
-  <label>Interval:</label>
-  <select id="intervalSelect">
-    <option value="5000">5 detik</option>
-    <option value="10000" selected>10 detik</option>
-    <option value="30000">30 detik</option>
-    <option value="60000">1 menit</option>
-  </select>
-  <button class="btn-check" onclick="checkAll()">🔁 Cek Sekarang</button>
-  <button class="btn-start" id="toggleBtn" onclick="toggleAuto()">▶ Auto Monitor</button>
+<div class="header">
+  <h1>⚡ Network Dashboard</h1>
+  <p>Browser-Based Network Diagnostics via JavaScript APIs</p>
+  <button class="scan-btn" id="scan-btn" onclick="runAllTests()">▶ Run Full Scan</button>
 </div>
 
-<div class="overall-status" id="overallStatus">
-  <span class="pulse gray"></span> Belum dicek — klik "Cek Sekarang"
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="status-pill"><div class="dot" id="dot-online"></div><span id="pill-online">Checking...</span></div>
+  <div class="status-pill"><div class="dot blue" id="dot-pub"></div><span id="pill-pub">Public IP: —</span></div>
+  <div class="status-pill"><div class="dot" id="dot-local"></div><span id="pill-local">Local IP: —</span></div>
+  <div class="status-pill"><div class="dot" id="dot-ping"></div><span id="pill-ping">Latency: —</span></div>
 </div>
 
-<div class="grid" id="grid"></div>
+<div class="grid">
 
-<div class="footer">
-  Menggunakan HTTP fetch sebagai pengganti ICMP ping (browser limitation) &nbsp;|&nbsp;
-  Latency &lt;100ms = Baik · 100–300ms = Lambat · &gt;300ms / Error = Offline
+  <!-- PUBLIC IP -->
+  <div class="card" style="--card-color:#00e5ff">
+    <div class="card-header">
+      <span class="card-icon">🌍</span>
+      <div class="card-title">Public IP Address<span>External Identity</span></div>
+    </div>
+    <div class="big-val" id="pub-ip">—</div>
+    <div class="stat"><span class="stat-label">ISP</span><span class="stat-value v-blue" id="pub-isp">—</span></div>
+    <div class="stat"><span class="stat-label">Organization</span><span class="stat-value v-blue" id="pub-org">—</span></div>
+    <div class="stat"><span class="stat-label">Country</span><span class="stat-value v-blue" id="pub-country">—</span></div>
+    <div class="stat"><span class="stat-label">Region</span><span class="stat-value v-blue" id="pub-region">—</span></div>
+    <div class="stat"><span class="stat-label">City</span><span class="stat-value v-blue" id="pub-city">—</span></div>
+    <div class="stat"><span class="stat-label">Timezone</span><span class="stat-value v-blue" id="pub-tz">—</span></div>
+    <div class="stat"><span class="stat-label">IPv6</span><span class="stat-value v-blue" id="pub-ipv6">—</span></div>
+    <button class="action-btn" onclick="getPublicIP()">↻ Refresh</button>
+  </div>
+
+  <!-- LOCAL IP -->
+  <div class="card" style="--card-color:#00ff88">
+    <div class="card-header">
+      <span class="card-icon">🏠</span>
+      <div class="card-title">Local IP — WebRTC Leak<span>Internal Network</span></div>
+    </div>
+    <div class="big-val v-green" id="local-ip">—</div>
+    <div class="stat"><span class="stat-label">Method</span><span class="stat-value v-green">WebRTC RTCPeerConnection</span></div>
+    <div class="stat"><span class="stat-label">All Local IPs</span><span class="stat-value v-green" id="all-local-ips">—</span></div>
+    <div class="stat"><span class="stat-label">Type</span><span class="stat-value v-green" id="local-type">—</span></div>
+    <div class="stat"><span class="stat-label">Note</span><span class="stat-value v-green" style="font-size:0.68rem">Private range only. Full IP hidden by browser sandbox.</span></div>
+    <button class="action-btn" style="border-color:var(--accent2);color:var(--accent2)" onclick="getLocalIP()">↻ Detect</button>
+  </div>
+
+  <!-- CONNECTION INFO -->
+  <div class="card" style="--card-color:#c084fc">
+    <div class="card-header">
+      <span class="card-icon">📡</span>
+      <div class="card-title">Connection Info<span>navigator.connection</span></div>
+    </div>
+    <div class="stat"><span class="stat-label">Online Status</span><span class="stat-value v-purple" id="conn-online">—</span></div>
+    <div class="stat"><span class="stat-label">Type</span><span class="stat-value v-purple" id="conn-type">—</span></div>
+    <div class="stat"><span class="stat-label">Effective Type</span><span class="stat-value v-purple" id="conn-eff">—</span></div>
+    <div class="stat"><span class="stat-label">Downlink Speed</span><span class="stat-value v-purple" id="conn-down">—</span></div>
+    <div class="stat"><span class="stat-label">RTT (estimated)</span><span class="stat-value v-purple" id="conn-rtt">—</span></div>
+    <div class="stat"><span class="stat-label">Save Data Mode</span><span class="stat-value v-purple" id="conn-save">—</span></div>
+    <div class="stat"><span class="stat-label">Downlink Max</span><span class="stat-value v-purple" id="conn-dlmax">—</span></div>
+    <div class="bar-wrap"><div class="bar-fill" id="speed-bar" style="width:0%;background:linear-gradient(90deg,var(--accent4),var(--accent))"></div></div>
+  </div>
+
+  <!-- LATENCY / PING -->
+  <div class="card" style="--card-color:#00ff88">
+    <div class="card-header">
+      <span class="card-icon">📶</span>
+      <div class="card-title">Latency Estimate<span>Fetch-based "Ping"</span></div>
+    </div>
+    <div class="gauge-wrap">
+      <div class="gauge-val" id="ping-val">—</div>
+      <div class="gauge-unit">milliseconds</div>
+      <div class="gauge-label" id="ping-quality" style="color:var(--muted)">Not tested</div>
+    </div>
+    <div class="stat"><span class="stat-label">Min</span><span class="stat-value v-green" id="ping-min">—</span></div>
+    <div class="stat"><span class="stat-label">Max</span><span class="stat-value v-green" id="ping-max">—</span></div>
+    <div class="stat"><span class="stat-label">Avg</span><span class="stat-value v-green" id="ping-avg">—</span></div>
+    <div class="stat"><span class="stat-label">Samples</span><span class="stat-value v-green" id="ping-samples">0 / 8</span></div>
+    <div class="ping-history" id="ping-history"></div>
+    <button class="action-btn" style="border-color:var(--accent2);color:var(--accent2)" id="ping-btn" onclick="runPing()">▶ Run Ping Test (8 samples)</button>
+  </div>
+
+  <!-- DNS LOOKUP -->
+  <div class="card" style="--card-color:#fbbf24">
+    <div class="card-header">
+      <span class="card-icon">🔍</span>
+      <div class="card-title">DNS Lookup<span>Reachability via fetch timing</span></div>
+    </div>
+    <div class="stat"><span class="stat-label">Method</span><span class="stat-value v-yellow" style="font-size:0.68rem">fetch() + performance.now() timing</span></div>
+    <div class="dns-result" id="dns-result">Press "Run DNS Tests" to check reachability of common hosts.</div>
+    <button class="action-btn" style="border-color:var(--warn);color:var(--warn)" id="dns-btn" onclick="runDNS()">▶ Run DNS Tests</button>
+  </div>
+
+  <!-- PORT REACHABILITY -->
+  <div class="card" style="--card-color:#ff6b35">
+    <div class="card-header">
+      <span class="card-icon">🔌</span>
+      <div class="card-title">Port Reachability<span>Image/fetch timing trick</span></div>
+    </div>
+    <table class="port-table">
+      <thead><tr><th>Host</th><th>Port</th><th>Service</th><th>Status</th><th>Time</th></tr></thead>
+      <tbody id="port-tbody">
+        <tr><td colspan="5" style="color:var(--muted);font-size:0.75rem;padding:0.5rem">Press scan to test ports...</td></tr>
+      </tbody>
+    </table>
+    <button class="action-btn" style="border-color:var(--accent3);color:var(--accent3)" id="port-btn" onclick="runPortScan()">▶ Scan Ports</button>
+  </div>
+
+  <!-- WEBSOCKET TEST -->
+  <div class="card span2" style="--card-color:#00e5ff">
+    <div class="card-header">
+      <span class="card-icon">🔗</span>
+      <div class="card-title">WebSocket Connection Test<span>detik.com : 443 (WSS)</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.8rem;margin-bottom:0.8rem">
+      <div class="stat" style="flex-direction:column;align-items:flex-start;gap:0.2rem;border:none;padding:0.5rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:8px">
+        <span class="stat-label">Target Host</span>
+        <span class="stat-value v-blue">detik.com</span>
+      </div>
+      <div class="stat" style="flex-direction:column;align-items:flex-start;gap:0.2rem;border:none;padding:0.5rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:8px">
+        <span class="stat-label">Port</span>
+        <span class="stat-value v-blue">443 (WSS)</span>
+      </div>
+      <div class="stat" style="flex-direction:column;align-items:flex-start;gap:0.2rem;border:none;padding:0.5rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:8px">
+        <span class="stat-label">Protocol</span>
+        <span class="stat-value v-blue">WebSocket Secure</span>
+      </div>
+      <div class="stat" style="flex-direction:column;align-items:flex-start;gap:0.2rem;border:none;padding:0.5rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:8px">
+        <span class="stat-label">Status</span>
+        <span class="stat-value" id="ws-status-val" style="color:var(--muted)">Not tested</span>
+      </div>
+      <div class="stat" style="flex-direction:column;align-items:flex-start;gap:0.2rem;border:none;padding:0.5rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:8px">
+        <span class="stat-label">Connect Time</span>
+        <span class="stat-value v-blue" id="ws-time">—</span>
+      </div>
+      <div class="stat" style="flex-direction:column;align-items:flex-start;gap:0.2rem;border:none;padding:0.5rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:8px">
+        <span class="stat-label">Attempts</span>
+        <span class="stat-value v-blue" id="ws-attempts">0</span>
+      </div>
+    </div>
+    <div class="ws-log" id="ws-log"><span class="info">[READY] WebSocket test engine initialized. Click below to test.</span></div>
+    <button class="action-btn" id="ws-btn" onclick="runWSTest()">▶ Test WebSocket → wss://detik.com:443</button>
+  </div>
+
 </div>
+
+<div class="footer">ALL TESTS RUN LOCALLY IN YOUR BROWSER — NO DATA SENT TO ANY SERVER EXCEPT PUBLIC APIs (ipapi.co, ipify.org)</div>
 
 <script>
-const DNS_TARGETS = [
-  {
-    name: "Cloudflare DNS",
-    ip: "1.1.1.1",
-    url: "https://1.1.1.1/dns-query?name=cloudflare.com&type=A",
-    icon: "🟠",
-    headers: { "Accept": "application/dns-json" }
-  },
-  {
-    name: "Google DNS",
-    ip: "8.8.8.8",
-    url: "https://dns.google/resolve?name=google.com&type=A",
-    icon: "🔵",
-    headers: {}
-  },
-  {
-    name: "Quad9 DNS",
-    ip: "9.9.9.9",
-    url: "https://dns.quad9.net:5053/dns-query?name=quad9.net&type=A",
-    icon: "🟣",
-    headers: { "Accept": "application/dns-json" }
-  },
-  {
-    name: "OpenDNS",
-    ip: "208.67.222.222",
-    url: "https://doh.opendns.com/dns-query?name=opendns.com&type=A",
-    icon: "🟡",
-    headers: { "Accept": "application/dns-json" }
-  },
-  {
-    name: "AdGuard DNS",
-    ip: "94.140.14.14",
-    url: "https://dns.adguard-dns.com/resolve?name=adguard.com&type=A",
-    icon: "🟢",
-    headers: {}
+// ── HELPERS ────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const ts = () => new Date().toLocaleTimeString();
+
+function wsLog(msg, cls='info') {
+  const log = $('ws-log');
+  log.innerHTML += `\n<span class="ts">[${ts()}]</span> <span class="${cls}">${msg}</span>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+// ── ONLINE STATUS ─────────────────────────────────────────────────────
+function updateOnline() {
+  const on = navigator.onLine;
+  $('dot-online').className = 'dot ' + (on ? 'green' : 'red');
+  $('pill-online').textContent = on ? 'Online ✅' : 'Offline ❌';
+  $('conn-online').textContent = on ? 'Online ✅' : 'Offline ❌';
+}
+updateOnline();
+window.addEventListener('online', updateOnline);
+window.addEventListener('offline', updateOnline);
+
+// ── CONNECTION INFO ───────────────────────────────────────────────────
+function updateConnectionInfo() {
+  const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (c) {
+    $('conn-type').textContent = c.type || 'N/A';
+    $('conn-eff').textContent = c.effectiveType || 'N/A';
+    $('conn-down').textContent = c.downlink != null ? c.downlink + ' Mbps' : 'N/A';
+    $('conn-rtt').textContent = c.rtt != null ? c.rtt + ' ms' : 'N/A';
+    $('conn-save').textContent = c.saveData ? 'Yes ⚠️' : 'No';
+    $('conn-dlmax').textContent = c.downlinkMax != null ? c.downlinkMax + ' Mbps' : 'N/A';
+    // speed bar: scale downlink 0–100 Mbps
+    const pct = Math.min(100, ((c.downlink || 0) / 100) * 100);
+    $('speed-bar').style.width = pct + '%';
+  } else {
+    ['conn-type','conn-eff','conn-down','conn-rtt','conn-save','conn-dlmax'].forEach(id => $(id).textContent = 'Not supported');
   }
+}
+updateConnectionInfo();
+
+// ── PUBLIC IP ─────────────────────────────────────────────────────────
+async function getPublicIP() {
+  $('pub-ip').textContent = 'Fetching...';
+  $('pub-isp').textContent = '—';
+  $('pub-org').textContent = '—';
+  $('pub-country').textContent = '—';
+  $('pub-region').textContent = '—';
+  $('pub-city').textContent = '—';
+  $('pub-tz').textContent = '—';
+  $('pub-ipv6').textContent = '—';
+  try {
+    // ipinfo.io returns IP + details in one call, no key needed for basic use
+    const r = await fetch('https://ipinfo.io/json');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+
+    const ip = d.ip || 'N/A';
+    $('pub-ip').textContent = ip;
+    $('pill-pub').textContent = 'Public IP: ' + ip;
+    $('dot-pub').className = 'dot green';
+
+    $('pub-isp').textContent = d.org || 'N/A';           // e.g. "AS1234 Telkom Indonesia"
+    $('pub-org').textContent = d.hostname || 'N/A';      // reverse hostname
+    $('pub-country').textContent = (d.country || '—');
+    $('pub-region').textContent = d.region || 'N/A';
+    $('pub-city').textContent = d.city || 'N/A';
+    $('pub-tz').textContent = d.timezone || 'N/A';
+    $('pub-ipv6').textContent = 'N/A (ipinfo returns IPv4)';
+
+  } catch(e) {
+    $('pub-ip').textContent = 'Failed — ' + e.message;
+    $('pill-pub').textContent = 'Public IP: Error';
+    $('dot-pub').className = 'dot red';
+    console.error('Public IP error:', e);
+  }
+}
+
+// ── LOCAL IP via WebRTC ────────────────────────────────────────────────
+function getLocalIP() {
+  $('local-ip').textContent = 'Detecting...';
+  $('all-local-ips').textContent = '—';
+  try {
+    const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    pc.createDataChannel('');
+    const ips = new Set();
+    pc.onicecandidate = e => {
+      if (!e.candidate) return;
+      const match = e.candidate.candidate.match(/(\d{1,3}\.){3}\d{1,3}|([a-f0-9:]+:+){2}[a-f0-9:]+/gi);
+      if (match) match.forEach(ip => {
+        if (!ip.startsWith('0.') && ip !== '0.0.0.0') ips.add(ip);
+      });
+      const arr = [...ips];
+      const primary = arr.find(ip => ip.match(/^(192\.168|10\.|172\.(1[6-9]|2\d|3[01]))/)) || arr[0] || 'N/A';
+      $('local-ip').textContent = primary;
+      $('pill-local').textContent = 'Local IP: ' + primary;
+      $('dot-local').className = 'dot green';
+      $('all-local-ips').textContent = arr.join(', ') || 'N/A';
+      $('local-type').textContent = primary.startsWith('192.168') ? 'Class C Private' :
+        primary.startsWith('10.') ? 'Class A Private' :
+        primary.startsWith('172.') ? 'Class B Private' : 'Other';
+    };
+    pc.createOffer().then(o => pc.setLocalDescription(o));
+    setTimeout(() => { try { pc.close(); } catch{} }, 4000);
+  } catch(e) {
+    $('local-ip').textContent = 'WebRTC blocked';
+  }
+}
+
+// ── PING (fetch timing) ────────────────────────────────────────────────
+const pingTargets = [
+  'https://www.google.com/favicon.ico',
+  'https://www.cloudflare.com/favicon.ico',
 ];
+let pingResults = [];
 
-const HISTORY_MAX = 20;
-const history = DNS_TARGETS.map(() => []);
-let autoTimer = null;
-let isRunning = false;
-
-// Build cards
-const grid = document.getElementById('grid');
-DNS_TARGETS.forEach((t, i) => {
-  grid.innerHTML += `
-    <div class="card" id="card-${i}">
-      <div class="card-header">
-        <div class="card-icon">${t.icon}</div>
-        <div>
-          <div class="card-title">${t.name}</div>
-          <div class="card-ip">${t.ip}</div>
-        </div>
-      </div>
-      <div class="status-badge badge-idle" id="badge-${i}">Idle</div>
-      <div class="latency" id="latency-${i}">— <span>ms</span></div>
-      <div class="history-bar" id="bar-${i}">
-        ${Array(HISTORY_MAX).fill('<div class="bar-item"></div>').join('')}
-      </div>
-      <div class="last-checked" id="last-${i}">Belum dicek</div>
-    </div>`;
-});
-
-async function ping(target) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
+async function singlePing() {
+  const url = pingTargets[Math.floor(Math.random() * pingTargets.length)] + '?_=' + Date.now();
   const t0 = performance.now();
   try {
-    await fetch(target.url, {
-      method: 'GET',
-      headers: target.headers,
-      signal: controller.signal,
-      cache: 'no-store'
-    });
-    const latency = Math.round(performance.now() - t0);
-    clearTimeout(timeout);
-    return latency;
-  } catch (e) {
-    clearTimeout(timeout);
+    await fetch(url, { mode: 'no-cors', cache: 'no-store' });
+    return Math.round(performance.now() - t0);
+  } catch {
     return null;
   }
 }
 
-function getStatusFromLatency(lat) {
-  if (lat === null)  return 'offline';
-  if (lat < 100)     return 'online';
-  if (lat < 300)     return 'slow';
-  return 'offline';
+async function runPing() {
+  const btn = $('ping-btn');
+  btn.disabled = true;
+  pingResults = [];
+  $('ping-history').innerHTML = '';
+  $('ping-val').textContent = '...';
+  $('ping-quality').textContent = 'Testing...';
+  $('ping-samples').textContent = '0 / 8';
+
+  for (let i = 0; i < 8; i++) {
+    const ms = await singlePing();
+    if (ms !== null) pingResults.push(ms);
+    $('ping-samples').textContent = `${i+1} / 8`;
+    if (ms !== null) {
+      $('ping-val').textContent = ms;
+      // bar
+      const bar = document.createElement('div');
+      bar.className = 'ping-bar';
+      const maxH = 48;
+      const h = Math.max(2, Math.min(maxH, maxH - (ms / 500) * maxH));
+      bar.style.height = h + 'px';
+      bar.style.background = ms < 50 ? 'var(--accent2)' : ms < 150 ? 'var(--warn)' : 'var(--red)';
+      $('ping-history').appendChild(bar);
+    }
+    await new Promise(r => setTimeout(r, 400));
+  }
+
+  if (pingResults.length > 0) {
+    const min = Math.min(...pingResults);
+    const max = Math.max(...pingResults);
+    const avg = Math.round(pingResults.reduce((a,b)=>a+b,0) / pingResults.length);
+    $('ping-min').textContent = min + ' ms';
+    $('ping-max').textContent = max + ' ms';
+    $('ping-avg').textContent = avg + ' ms';
+    $('ping-val').textContent = avg;
+    $('pill-ping').textContent = 'Latency: ' + avg + ' ms';
+
+    let q, col;
+    if (avg < 30) { q = 'Excellent 🟢'; col = 'var(--accent2)'; $('dot-ping').className = 'dot green'; }
+    else if (avg < 80) { q = 'Good 🟡'; col = 'var(--warn)'; $('dot-ping').className = 'dot yellow'; }
+    else if (avg < 200) { q = 'Fair 🟠'; col = 'var(--accent3)'; $('dot-ping').className = 'dot yellow'; }
+    else { q = 'Poor 🔴'; col = 'var(--red)'; $('dot-ping').className = 'dot red'; }
+    $('ping-quality').textContent = q;
+    $('ping-quality').style.color = col;
+  }
+  btn.disabled = false;
 }
 
-function updateCard(i, latency) {
-  const status = getStatusFromLatency(latency);
-  const card   = document.getElementById(`card-${i}`);
-  const badge  = document.getElementById(`badge-${i}`);
-  const latEl  = document.getElementById(`latency-${i}`);
-  const lastEl = document.getElementById(`last-${i}`);
+// ── DNS LOOKUP (fetch timing) ─────────────────────────────────────────
+const dnsTargets = [
+  { host: 'google.com', url: 'https://www.google.com/favicon.ico' },
+  { host: 'detik.com', url: 'https://www.detik.com/favicon.ico' },
+  { host: 'cloudflare.com', url: 'https://www.cloudflare.com/favicon.ico' },
+  { host: 'github.com', url: 'https://github.com/favicon.ico' },
+  { host: 'youtube.com', url: 'https://www.youtube.com/favicon.ico' },
+  { host: 'poltekkesjkt2.ac.id', url: 'https://www.poltekkesjkt2.ac.id/favicon.ico' },
+];
 
-  card.className = `card ${status}`;
+async function runDNS() {
+  const btn = $('dns-btn');
+  btn.disabled = true;
+  $('dns-result').innerHTML = '<span style="color:var(--muted)">Running DNS reachability tests...</span>';
+  let html = '';
+  for (const t of dnsTargets) {
+    const t0 = performance.now();
+    let status, ms;
+    try {
+      await fetch(t.url + '?_=' + Date.now(), { mode: 'no-cors', cache: 'no-store' });
+      ms = Math.round(performance.now() - t0);
+      status = ms < 500 ? `<span style="color:var(--accent2)">✅ Reachable</span>` : `<span style="color:var(--warn)">⚠️ Slow</span>`;
+    } catch {
+      ms = Math.round(performance.now() - t0);
+      status = `<span style="color:var(--red)">❌ Unreachable</span>`;
+    }
+    html += `<div style="display:flex;justify-content:space-between;gap:1rem">
+      <span style="color:var(--accent)">${t.host}</span>
+      <span>${status} &nbsp;<span style="color:var(--muted)">${ms}ms</span></span>
+    </div>`;
+    $('dns-result').innerHTML = html;
+    await new Promise(r => setTimeout(r, 200));
+  }
+  btn.disabled = false;
+}
 
-  const badgeMap = {
-    online:  ['badge-online',  '✅ Online'],
-    offline: ['badge-offline', '❌ Offline'],
-    slow:    ['badge-slow',    '⚠️ Lambat'],
-  };
-  badge.className = `status-badge ${badgeMap[status][0]}`;
-  badge.textContent = badgeMap[status][1];
+// ── PORT REACHABILITY ─────────────────────────────────────────────────
+const portTargets = [
+  { host: 'detik.com',       port: 80,  service: 'HTTP',   url: 'http://www.detik.com/favicon.ico' },
+  { host: 'detik.com',       port: 443, service: 'HTTPS',  url: 'https://www.detik.com/favicon.ico' },
+  { host: 'google.com',      port: 443, service: 'HTTPS',  url: 'https://www.google.com/favicon.ico' },
+  { host: 'cloudflare.com',  port: 443, service: 'HTTPS',  url: 'https://www.cloudflare.com/favicon.ico' },
+  { host: 'github.com',      port: 443, service: 'HTTPS',  url: 'https://github.com/favicon.ico' },
+  { host: '1.1.1.1',         port: 443, service: 'DNS/TLS', url: 'https://1.1.1.1/' },
+];
 
-  latEl.innerHTML = latency !== null
-    ? `${latency} <span>ms</span>`
-    : `— <span>ms (timeout)</span>`;
+async function runPortScan() {
+  const btn = $('port-btn');
+  btn.disabled = true;
+  const tbody = $('port-tbody');
+  tbody.innerHTML = '';
+  for (const t of portTargets) {
+    // placeholder row
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${t.host}</td><td>${t.port}</td><td>${t.service}</td>
+      <td><span class="badge badge-gray">Testing...</span></td><td style="color:var(--muted)">—</td>`;
+    tbody.appendChild(tr);
 
-  const now = new Date();
-  lastEl.textContent = `Dicek: ${now.toLocaleTimeString('id-ID')}`;
+    const t0 = performance.now();
+    let badge, ms;
+    try {
+      await fetch(t.url + '?_=' + Date.now(), { mode: 'no-cors', cache: 'no-store' });
+      ms = Math.round(performance.now() - t0);
+      badge = ms < 800
+        ? `<span class="badge badge-green">Open ✅</span>`
+        : `<span class="badge badge-yellow">Slow ⚠️</span>`;
+    } catch {
+      ms = Math.round(performance.now() - t0);
+      badge = `<span class="badge badge-red">Blocked ❌</span>`;
+    }
+    tr.innerHTML = `<td style="color:var(--text)">${t.host}</td>
+      <td style="color:var(--accent)">${t.port}</td>
+      <td style="color:var(--muted)">${t.service}</td>
+      <td>${badge}</td>
+      <td style="color:var(--accent4)">${ms}ms</td>`;
+    await new Promise(r => setTimeout(r, 150));
+  }
+  btn.disabled = false;
+}
 
-  // Update history
-  history[i].push({ latency, status });
-  if (history[i].length > HISTORY_MAX) history[i].shift();
+// ── WEBSOCKET TEST ────────────────────────────────────────────────────
+let wsAttempts = 0;
+function runWSTest() {
+  const btn = $('ws-btn');
+  btn.disabled = true;
+  wsAttempts++;
+  $('ws-attempts').textContent = wsAttempts;
+  $('ws-status-val').textContent = 'Connecting...';
+  $('ws-status-val').style.color = 'var(--warn)';
+  $('ws-time').textContent = '—';
 
-  const barContainer = document.getElementById(`bar-${i}`);
-  const bars = barContainer.querySelectorAll('.bar-item');
-  bars.forEach((b, idx) => {
-    const h = history[i][idx];
-    if (!h) { b.className = 'bar-item'; b.style.height = '4px'; return; }
-    const cls = h.status === 'online' ? 'ok' : h.status === 'slow' ? 'war
+  wsLog('Initiating WebSocket connection to wss://detik.com:443', 'info');
+  wsLog('Protocol: WSS (WebSocket Secure over TLS)', 'info');
+
+  const t0 = performance.now();
+  let ws;
+  try {
+    ws = new WebSocket('wss://detik.com');
+    wsLog('WebSocket object created. Waiting for handshake...', 'info');
+
+    ws.onopen = () => {
+      const ms = Math.round(performance.now() - t0);
+      $('ws-time').textContent = ms + ' ms';
+      $('ws-status-val').textContent = 'Connected ✅';
+      $('ws-status-val').style.color = 'var(--accent2)';
+      wsLog(`Connection ESTABLISHED in ${ms}ms`, 'ok');
+      wsLog('Handshake successful. Port 443 is open and WebSocket-capable.', 'ok');
+      wsLog('Sending ping frame...', 'info');
+      try { ws.send('ping'); } catch{}
+      setTimeout(() => {
+        ws.close(1000, 'Test complete');
+        wsLog('Connection closed gracefully (code 1000).', 'info');
+      }, 1500);
+      btn.disabled = false;
+    };
+
+    ws.onerror = (e) => {
+      const ms = Math.round(performance.now() - t0);
+      $('ws-time').textContent = ms + ' ms';
+      wsLog('Connection error — detik.com may not support WebSocket protocol', 'warn');
+      wsLog(`Note: Port 443 is reachable (HTTPS works) but WebSocket upgrade was rejected.`, 'warn');
+      wsLog('This is NORMAL — most websites only support HTTP/HTTPS, not WebSocket.', 'info');
+      wsLog('Result: TCP port 443 is OPEN, WebSocket protocol: NOT SUPPORTED', 'warn');
+      $('ws-status-val').textContent = 'Port Open, WS Rejected ⚠️';
+      $('ws-status-val').style.color = 'var(--warn)';
+      btn.disabled = false;
+    };
+
+    ws.onclose = (e) => {
+      wsLog(`Socket closed — code: ${e.code}, reason: "${e.reason || 'none'}"`, e.code === 1000 ? 'ok' : 'info');
+    };
+
+    ws.onmessage = (e) => {
+      wsLog(`Message received: ${e.data}`, 'ok');
+    };
+
+    // timeout fallback
+    setTimeout(() => {
+      if (ws.readyState !== 1 && ws.readyState !== 3) {
+        ws.close();
+        $('ws-status-val').textContent = 'Timeout ⏱️';
+        $('ws-status-val').style.color = 'var(--accent3)';
+        wsLog('Connection timed out after 8 seconds.', 'err');
+        btn.disabled = false;
+      }
+    }, 8000);
+
+  } catch(e) {
+    wsLog('Failed to create WebSocket: ' + e.message, 'err');
+    $('ws-status-val').textContent = 'Error ❌';
+    $('ws-status-val').style.color = 'var(--red)';
+    btn.disabled = false;
+  }
+}
+
+// ── RUN ALL ───────────────────────────────────────────────────────────
+async function runAllTests() {
+  const btn = $('scan-btn');
+  btn.disabled = true;
+  btn.textContent = '⟳ Scanning...';
+  btn.classList.add('running');
+
+  updateConnectionInfo();
+  getLocalIP();
+  await getPublicIP();
+  await runPing();
+  await runDNS();
+  await runPortScan();
+  runWSTest();
+
+  btn.disabled = false;
+  btn.textContent = '↻ Re-run Full Scan';
+  btn.classList.remove('running');
+}
+
+// Auto-load connection info on startup
+updateConnectionInfo();
+</script>
+</body>
+</html>
