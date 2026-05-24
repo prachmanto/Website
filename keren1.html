@@ -1,0 +1,769 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Network Diagnostics Dashboard</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0f0f1a;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    padding: 20px 30px;
+    border-bottom: 2px solid #00d4ff33;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  header .logo {
+    font-size: 28px;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+    color: #00d4ff;
+    letter-spacing: 1px;
+  }
+
+  header p {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 2px;
+  }
+
+  .container {
+    flex: 1;
+    padding: 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .card {
+    background: linear-gradient(145deg, #1a1a2e, #16213e);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid #ffffff10;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .card-icon {
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: #ffffff08;
+  }
+
+  .card-title h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+  }
+
+  .card-title p {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 2px;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #fff;
+    letter-spacing: 0.5px;
+    width: 100%;
+  }
+
+  .btn:hover { filter: brightness(1.15); transform: scale(1.02); }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-cyan    { background: linear-gradient(135deg, #00b4d8, #0077b6); }
+  .btn-green   { background: linear-gradient(135deg, #06d6a0, #048a68); }
+  .btn-orange  { background: linear-gradient(135deg, #f77f00, #d62828); }
+  .btn-purple  { background: linear-gradient(135deg, #7b2ff7, #3d0ca3); }
+
+  /* Result Box */
+  .result-box {
+    background: #0a0a14;
+    border-radius: 10px;
+    padding: 14px;
+    min-height: 80px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    color: #cdd6f4;
+    border: 1px solid #ffffff0d;
+    line-height: 1.7;
+    overflow-x: auto;
+    word-break: break-all;
+  }
+
+  .result-box .placeholder {
+    color: #555;
+    font-style: italic;
+  }
+
+  .result-box .value {
+    color: #00d4ff;
+    font-weight: bold;
+    font-size: 1.1rem;
+  }
+
+  .result-box .label {
+    color: #888;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .result-box .success { color: #06d6a0; }
+  .result-box .error   { color: #f44336; }
+  .result-box .warn    { color: #ffd166; }
+
+  /* Ping stats grid */
+  .ping-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .ping-stat {
+    background: #ffffff08;
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+
+  .ping-stat .stat-val {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #00d4ff;
+  }
+
+  .ping-stat .stat-label {
+    font-size: 0.65rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Port Scan table */
+  .port-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    margin-top: 4px;
+  }
+
+  .port-table th {
+    color: #888;
+    font-weight: 500;
+    text-align: left;
+    padding: 4px 6px;
+    border-bottom: 1px solid #ffffff10;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+  }
+
+  .port-table td {
+    padding: 6px 6px;
+    border-bottom: 1px solid #ffffff08;
+    vertical-align: middle;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-open   { background: #06d6a020; color: #06d6a0; border: 1px solid #06d6a050; }
+  .badge-closed { background: #f4433620; color: #f44336; border: 1px solid #f4433650; }
+  .badge-wait   { background: #ffd16620; color: #ffd166; border: 1px solid #ffd16650; }
+
+  /* Summary */
+  .summary-card {
+    grid-column: 1 / -1;
+    background: linear-gradient(145deg, #1a1a2e, #16213e);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid #00d4ff22;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .summary-card h2 {
+    color: #00d4ff;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .summary-item {
+    background: #0a0a14;
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid #ffffff0d;
+  }
+
+  .summary-item .s-label {
+    font-size: 0.7rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .summary-item .s-value {
+    font-size: 0.95rem;
+    color: #e0e0e0;
+    font-family: 'Courier New', monospace;
+    margin-top: 4px;
+    font-weight: 600;
+    word-break: break-all;
+  }
+
+  /* Spinner */
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #ffffff40;
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Footer */
+  footer {
+    background: #0a0a14;
+    border-top: 1px solid #ffffff10;
+    padding: 16px 30px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #555;
+  }
+
+  footer a {
+    color: #00d4ff;
+    text-decoration: none;
+    margin: 0 8px;
+    transition: color 0.2s;
+  }
+
+  footer a:hover { color: #7b2ff7; text-decoration: underline; }
+
+  .footer-links {
+    margin-top: 6px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .run-all-btn {
+    background: linear-gradient(135deg, #7b2ff7, #00d4ff);
+    padding: 14px 32px;
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 auto 20px auto;
+  }
+
+  .run-all-btn:hover { filter: brightness(1.15); transform: scale(1.02); }
+
+  @media (max-width: 600px) {
+    .container { padding: 16px; gap: 16px; }
+    header { padding: 14px 16px; }
+    header h1 { font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🌐</div>
+  <div>
+    <h1>Network Diagnostics Dashboard</h1>
+    <p>Real-time network tools — IP lookup · Ping · Port Scanner</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Run All -->
+  <div style="grid-column: 1 / -1; text-align:center;">
+    <button class="run-all-btn" onclick="runAll()">
+      ⚡ Run All Diagnostics
+    </button>
+  </div>
+
+  <!-- Card 1: Public IP -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🌍</div>
+      <div class="card-title">
+        <h2>Public IP Address</h2>
+        <p>Your internet-facing IP from external lookup</p>
+      </div>
+    </div>
+    <button class="btn btn-cyan" id="btn-pub" onclick="getPublicIP()">
+      🔍 Get Public IP
+    </button>
+    <div class="result-box" id="result-pub">
+      <span class="placeholder">Press the button to fetch your public IP...</span>
+    </div>
+  </div>
+
+  <!-- Card 2: Local IP -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🖥️</div>
+      <div class="card-title">
+        <h2>Local IP Address</h2>
+        <p>Device IP on the current network (WebRTC)</p>
+      </div>
+    </div>
+    <button class="btn btn-green" id="btn-local" onclick="getLocalIP()">
+      📡 Get Local IP
+    </button>
+    <div class="result-box" id="result-local">
+      <span class="placeholder">Press the button to detect your local IP...</span>
+    </div>
+  </div>
+
+  <!-- Card 3: Ping Google -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">📶</div>
+      <div class="card-title">
+        <h2>Ping Test (google.com)</h2>
+        <p>10 HTTP-based round-trip measurements</p>
+      </div>
+    </div>
+    <button class="btn btn-orange" id="btn-ping" onclick="doPing()">
+      🏓 Ping Google × 10
+    </button>
+    <div class="result-box" id="result-ping">
+      <span class="placeholder">Press the button to start ping test...</span>
+    </div>
+  </div>
+
+  <!-- Card 4: Port Scan -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🔒</div>
+      <div class="card-title">
+        <h2>Port 443 Scanner</h2>
+        <p>HTTPS reachability check on 6 major sites</p>
+      </div>
+    </div>
+    <button class="btn btn-purple" id="btn-port" onclick="scanPorts()">
+      🔭 Scan Port 443
+    </button>
+    <div class="result-box" id="result-port">
+      <span class="placeholder">Press the button to scan port 443...</span>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-card">
+    <h2>📊 Results Summary</h2>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="s-label">🌍 Public IP</div>
+        <div class="s-value" id="sum-pub">—</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-label">🖥️ Local IP</div>
+        <div class="s-value" id="sum-local">—</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-label">📶 Avg Latency</div>
+        <div class="s-value" id="sum-avg">—</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-label">📶 Jitter</div>
+        <div class="s-value" id="sum-jitter">—</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-label">📶 Min / Max</div>
+        <div class="s-value" id="sum-minmax">—</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-label">🔒 Ports Open</div>
+        <div class="s-value" id="sum-ports">—</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div>Network Diagnostics Dashboard &mdash; Browser-based Tools</div>
+  <div class="footer-links">
+    <a href="https://s.id/jakadunet" target="_blank" rel="noopener">🔗 JAKADUNET</a>
+    <a href="https://s.id/ipinfo2026" target="_blank" rel="noopener">🔗 IPINFO2026</a>
+  </div>
+</footer>
+
+<script>
+// ─────────────────────────────────────────────
+// Utility: set loading state
+// ─────────────────────────────────────────────
+function setLoading(btnId, resultId, label) {
+  const btn = document.getElementById(btnId);
+  const res = document.getElementById(resultId);
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span> ${label}`;
+  res.innerHTML = `<span class="warn"><span class="spinner"></span> Working...</span>`;
+}
+
+function resetBtn(btnId, label) {
+  const btn = document.getElementById(btnId);
+  btn.disabled = false;
+  btn.innerHTML = label;
+}
+
+// ─────────────────────────────────────────────
+// 1. Public IP
+// ─────────────────────────────────────────────
+async function getPublicIP() {
+  setLoading('btn-pub', 'result-pub', 'Fetching...');
+  const apis = [
+    { url: 'https://api.ipify.org?format=json', parse: d => d.ip },
+    { url: 'https://api.my-ip.io/v2/ip.json',  parse: d => d.ip },
+    { url: 'https://ipapi.co/json/',            parse: d => d.ip },
+  ];
+  let ip = null, geo = null;
+  for (const api of apis) {
+    try {
+      const r = await fetch(api.url, { cache: 'no-store' });
+      const d = await r.json();
+      ip = api.parse(d);
+      if (d.country_name) geo = d;
+      if (ip) break;
+    } catch {}
+  }
+
+  // Try geo enrichment
+  if (ip && !geo) {
+    try {
+      const r = await fetch(`https://ipapi.co/${ip}/json/`);
+      geo = await r.json();
+    } catch {}
+  }
+
+  const box = document.getElementById('result-pub');
+  if (ip) {
+    box.innerHTML = `
+      <div class="label">Public IP Address</div>
+      <div class="value">${ip}</div>
+      ${geo ? `
+      <hr style="border-color:#ffffff10;margin:8px 0">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px;font-size:0.78rem;">
+        <span class="label">Country</span><span class="success">${geo.country_name || '—'} ${geo.country_code ? '('+geo.country_code+')' : ''}</span>
+        <span class="label">Region</span><span>${geo.region || '—'}</span>
+        <span class="label">City</span><span>${geo.city || '—'}</span>
+        <span class="label">ISP / Org</span><span>${geo.org || geo.asn || '—'}</span>
+        <span class="label">Timezone</span><span>${geo.timezone || '—'}</span>
+      </div>` : ''}
+    `;
+    document.getElementById('sum-pub').textContent = ip;
+  } else {
+    box.innerHTML = `<span class="error">❌ Unable to fetch public IP. Check internet connection.</span>`;
+    document.getElementById('sum-pub').textContent = 'Error';
+  }
+  resetBtn('btn-pub', '🔍 Get Public IP');
+}
+
+// ─────────────────────────────────────────────
+// 2. Local IP via WebRTC
+// ─────────────────────────────────────────────
+function getLocalIP() {
+  setLoading('btn-local', 'result-local', 'Detecting...');
+  const box = document.getElementById('result-local');
+
+  const ips = new Set();
+  let pc;
+
+  try {
+    pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    pc.createDataChannel('');
+    pc.createOffer().then(o => pc.setLocalDescription(o));
+
+    const timeout = setTimeout(() => {
+      pc.close();
+      const found = [...ips];
+      if (found.length === 0) {
+        box.innerHTML = `<span class="warn">⚠️ No local IP detected. Browser may block WebRTC leak detection.<br><br>
+          <span style="font-size:0.75rem;color:#666">Try: disable VPN, use Chrome/Firefox, or check browser permissions.</span></span>`;
+        document.getElementById('sum-local').textContent = 'Blocked';
+      } else {
+        renderLocalIPs(found, box);
+      }
+      resetBtn('btn-local', '📡 Get Local IP');
+    }, 3000);
+
+    pc.onicecandidate = e => {
+      if (!e.candidate) return;
+      const m = e.candidate.candidate.match(/(\d+\.\d+\.\d+\.\d+)/g);
+      if (m) m.forEach(ip => {
+        if (!ip.startsWith('0.') && ip !== '0.0.0.0') ips.add(ip);
+      });
+    };
+  } catch(err) {
+    box.innerHTML = `<span class="error">❌ WebRTC not supported or blocked: ${err.message}</span>`;
+    resetBtn('btn-local', '📡 Get Local IP');
+  }
+}
+
+function renderLocalIPs(ips, box) {
+  const classify = ip => {
+    if (ip.startsWith('10.')) return 'Private (Class A)';
+    if (ip.startsWith('192.168.')) return 'Private (Class C)';
+    if (ip.match(/^172\.(1[6-9]|2\d|3[01])\./)) return 'Private (Class B)';
+    if (ip.startsWith('169.254.')) return 'Link-local';
+    return 'Public / Other';
+  };
+
+  const primary = ips.find(ip => !ip.startsWith('169.')) || ips[0];
+  document.getElementById('sum-local').textContent = primary || ips[0];
+
+  box.innerHTML = `
+    <div class="label">Detected IP(s) via WebRTC</div>
+    ${ips.map(ip => `
+      <div style="margin-top:6px;">
+        <span class="value">${ip}</span>
+        <span style="color:#888;font-size:0.72rem;margin-left:8px">${classify(ip)}</span>
+      </div>`).join('')}
+  `;
+}
+
+// ─────────────────────────────────────────────
+// 3. Ping Google (HTTP-based, 10×)
+// ─────────────────────────────────────────────
+async function doPing() {
+  setLoading('btn-ping', 'result-ping', 'Pinging...');
+  const box = document.getElementById('result-ping');
+  const TIMES = 10;
+  const TARGET = 'https://www.google.com/generate_204';
+  const results = [];
+
+  box.innerHTML = `<span class="label">Sending ${TIMES} pings to google.com...</span><br>`;
+
+  for (let i = 0; i < TIMES; i++) {
+    const t0 = performance.now();
+    let rtt = null, status = 'ok';
+    try {
+      await fetch(TARGET + '?_=' + Date.now(), {
+        mode: 'no-cors', cache: 'no-store'
+      });
+      rtt = Math.round(performance.now() - t0);
+    } catch {
+      status = 'fail';
+      rtt = null;
+    }
+    results.push({ i: i + 1, rtt, status });
+
+    // Live update
+    const row = status === 'ok'
+      ? `<span class="success">Ping #${i+1}: <b>${rtt} ms</b></span>`
+      : `<span class="error">Ping #${i+1}: timeout</span>`;
+    box.innerHTML += row + '<br>';
+    box.scrollTop = box.scrollHeight;
+
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  // Stats
+  const valid = results.filter(r => r.rtt !== null).map(r => r.rtt);
+  if (valid.length === 0) {
+    box.innerHTML += `<br><span class="error">❌ All pings failed. No internet or blocked by CORS.</span>`;
+    resetBtn('btn-ping', '🏓 Ping Google × 10');
+    return;
+  }
+
+  const min  = Math.min(...valid);
+  const max  = Math.max(...valid);
+  const avg  = Math.round(valid.reduce((a,b) => a+b, 0) / valid.length);
+  const loss = results.filter(r => r.rtt === null).length;
+
+  // Jitter = mean of absolute diffs between consecutive pings
+  let jitter = 0;
+  if (valid.length > 1) {
+    const diffs = [];
+    for (let i = 1; i < valid.length; i++) diffs.push(Math.abs(valid[i] - valid[i-1]));
+    jitter = Math.round(diffs.reduce((a,b)=>a+b,0) / diffs.length);
+  }
+
+  box.innerHTML += `<hr style="border-color:#ffffff10;margin:8px 0">`;
+  box.innerHTML += `
+    <div class="ping-grid">
+      <div class="ping-stat"><div class="stat-val" style="color:#06d6a0">${min} ms</div><div class="stat-label">Min</div></div>
+      <div class="ping-stat"><div class="stat-val" style="color:#f77f00">${max} ms</div><div class="stat-label">Max</div></div>
+      <div class="ping-stat"><div class="stat-val" style="color:#00d4ff">${avg} ms</div><div class="stat-label">Average</div></div>
+      <div class="ping-stat"><div class="stat-val" style="color:#7b2ff7">${jitter} ms</div><div class="stat-label">Jitter</div></div>
+    </div>
+    <div style="margin-top:8px;font-size:0.75rem;color:${loss>0?'#f44336':'#06d6a0'}">
+      ${loss === 0 ? '✅ 0% packet loss' : `⚠️ ${loss}/${TIMES} lost (${Math.round(loss/TIMES*100)}% loss)`}
+    </div>
+  `;
+
+  document.getElementById('sum-avg').textContent    = avg + ' ms';
+  document.getElementById('sum-jitter').textContent = jitter + ' ms';
+  document.getElementById('sum-minmax').textContent = `${min} / ${max} ms`;
+
+  resetBtn('btn-ping', '🏓 Ping Google × 10');
+}
+
+// ─────────────────────────────────────────────
+// 4. Port 443 Scanner (fetch-based HTTPS check)
+// ─────────────────────────────────────────────
+const SCAN_TARGETS = [
+  { name: 'Google',      host: 'https://www.google.com' },
+  { name: 'Cloudflare',  host: 'https://www.cloudflare.com' },
+  { name: 'GitHub',      host: 'https://github.com' },
+  { name: 'Microsoft',   host: 'https://www.microsoft.com' },
+  { name: 'Amazon AWS',  host: 'https://aws.amazon.com' },
+  { name: 'Facebook',    host: 'https://www.facebook.com' },
+];
+
+async function scanPorts() {
+  setLoading('btn-port', 'result-port', 'Scanning...');
+  const box = document.getElementById('result-port');
+
+  box.innerHTML = `
+    <table class="port-table">
+      <thead>
+        <tr>
+          <th>Site</th><th>Host</th><th>Port</th><th>Status</th><th>RTT</th>
+        </tr>
+      </thead>
+      <tbody id="port-tbody"></tbody>
+    </table>
+  `;
+
+  const tbody = document.getElementById('port-tbody');
+  let openCount = 0;
+
+  // Add placeholder rows
+  SCAN_TARGETS.forEach((t, i) => {
+    const tr = document.createElement('tr');
+    tr.id = 'port-row-' + i;
+    tr.innerHTML = `
+      <td>${t.name}</td>
+      <td style="color:#888;font-size:0.75rem">${t.host.replace('https://','')}</td>
+      <td style="color:#ffd166">443</td>
+      <td><span class="badge badge-wait"><span class="spinner"></span></span></td>
+      <td>—</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const checkPort = async (target, i) => {
+    const t0 = performance.now();
+    let open = false, rtt = '—';
+    try {
+      await fetch(target.host, { mode: 'no-cors', cache: 'no-store' });
+      open = true;
+      rtt = Math.round(performance.now() - t0) + ' ms';
+    } catch (e) {
+      // A network error still implies TCP reached (CORS block) - check error type
+      const msg = e.message || '';
+      open = !msg.includes('net::ERR') && !msg.includes('NetworkError') === false
+        ? true : false;
+      // Simpler: if fetch returns any response or CORS error → port reachable
+      // If net::ERR_CONNECTION_REFUSED → closed
+      open = !msg.toLowerCase().includes('refused');
+      rtt = Math.round(performance.now() - t0) + ' ms';
+    }
+
+    if (open) openCount++;
+    const row = document.getElementById('port-row-' + i);
+    if (row) {
+      row.cells[3].innerHTML = open
+        ? `<span class="badge badge-open">OPEN</span>`
+        : `<span class="badge badge-closed">CLOSED</span>`;
+      row.cells[4].textContent = rtt;
+    }
+  };
+
+  await Promise.all(SCAN_TARGETS.map((t, i) => checkPort(t, i)));
+
+  document.getElementById('sum-ports').textContent = `${openCount} / ${SCAN_TARGETS.length} open`;
+  resetBtn('btn-port', '🔭 Scan Port 443');
+}
+
+// ─────────────────────────────────────────────
+// Run All
+// ─────────────────────────────────────────────
+async function runAll() {
+  await Promise.all([getPublicIP(), getLocalIP(), doPing(), scanPorts()]);
+}
+</script>
+</body>
+</html>
