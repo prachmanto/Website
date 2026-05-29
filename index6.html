@@ -1,0 +1,50 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap');
+  .btn-zone { display: flex; flex-direction: column; align-items: center; gap: 2rem; padding: 2.5rem 1rem; }
+  .btn-row { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+  .fun-btn {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    padding: 1rem 2.2rem;
+    border: none;
+    border-radius: 2rem;
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s;
+    outline: none;
+    letter-spacing: 0.03em;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .fun-btn:active { transform: scale(0.93) !important; }
+  .btn-1 { background: #f9a826; color: #4a2800; box-shadow: 0 6px 0 #c47800; }
+  .btn-1:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #c47800; }
+  .btn-2 { background: #f05c78; color: #fff; box-shadow: 0 6px 0 #a02040; }
+  .btn-2:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #a02040; }
+  .btn-3 { background: #4bc8b0; color: #00312a; box-shadow: 0 6px 0 #238f7a; }
+  .btn-3:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #238f7a; }
+  .btn-4 { background: #4cd8b0; color: #00312a; box-shadow: 0 6px 0 #238f7a; }
+  .btn-4:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #238f7a; }
+  .msg-box {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0.6rem 1.4rem;
+    border-radius: 1.5rem;
+    background: var(--color-background-secondary);
+    color: var(--color-text-secondary);
+    border: 0.5px solid var(--color-border-tertiary);
+    text-align: center;
+  }
+</style>
+
+<div class="btn-zone">
+  <h2 class="sr-only">Three buttons that open links in new tabs</h2>
+  <div class="btn-row">
+    <a class="fun-btn btn-1" href="https://www.detik.com" target="_blank" rel="noopener">Detik.com</a>
+    <a class="fun-btn btn-2" href="https://s.id/jakadunet" target="_blank" rel="noopener">Jakadunet</a>
+    <a class="fun-btn btn-3" href="https://poltekkesjkt2.ac.id" target="_blank" rel="noopener">Poltekkes</a>
+	<a class="fun-btn btn-4" href="https://s.id/rachmanto" target="_blank" rel="noopener">Tools</a>
+  </div>
+  <div class="msg-box">Click any button to open the link in a new tab</div>
+</div>

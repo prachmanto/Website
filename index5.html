@@ -1,0 +1,91 @@
+
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap');
+  .btn-zone { display: flex; flex-direction: column; align-items: center; gap: 2rem; padding: 2.5rem 1rem; }
+  .blue-frame {
+    border: 4px solid #378ADD;
+    border-radius: 1.5rem;
+    padding: 2rem 2.5rem;
+    background: #E6F1FB;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .row-label {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #185FA5;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    align-self: flex-start;
+  }
+  .btn-row { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+  .divider {
+    width: 100%;
+    border: none;
+    border-top: 2px dashed #378ADD;
+    margin: 0;
+  }
+  .fun-btn {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    padding: 0.9rem 1.6rem;
+    border: none;
+    border-radius: 2rem;
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s;
+    outline: none;
+    letter-spacing: 0.03em;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .fun-btn:active { transform: scale(0.93) !important; }
+  .btn-1 { background: #f9a826; color: #4a2800; box-shadow: 0 6px 0 #c47800; }
+  .btn-1:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #c47800; }
+  .btn-2 { background: #f05c78; color: #fff; box-shadow: 0 6px 0 #a02040; }
+  .btn-2:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #a02040; }
+  .btn-3 { background: #4bc8b0; color: #00312a; box-shadow: 0 6px 0 #238f7a; }
+  .btn-3:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #238f7a; }
+  .btn-4 { background: #a78bfa; color: #1e0050; box-shadow: 0 6px 0 #6d28d9; }
+  .btn-4:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #6d28d9; }
+  .btn-5 { background: #fb923c; color: #3b0a00; box-shadow: 0 6px 0 #c2410c; }
+  .btn-5:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #c2410c; }
+  .btn-6 { background: #34d399; color: #064e3b; box-shadow: 0 6px 0 #059669; }
+  .btn-6:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #059669; }
+  .btn-7 { background: #60a5fa; color: #1e3a5f; box-shadow: 0 6px 0 #2563eb; }
+  .btn-7:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #2563eb; }
+  .msg-box {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0.6rem 1.4rem;
+    border-radius: 1.5rem;
+    background: #fff;
+    color: #185FA5;
+    border: 0.5px solid #378ADD;
+    text-align: center;
+  }
+</style>
+
+<div class="btn-zone">
+  <div class="blue-frame">
+    <span class="row-label">Row 1 - BASIC</span>
+    <div class="btn-row">
+      <a class="fun-btn btn-1" href="https://ekinerja-portal-eoffice.kemkes.go.id/index.cj" target="_blank" rel="noopener">LOG BOOK KEMKES</a>
+      <a class="fun-btn btn-2" href="https://s.id/jakadunet" target="_blank" rel="noopener">JAKADU MONITOR</a>
+      <a class="fun-btn btn-3" href="https://poltekkesjkt2.ac.id" target="_blank" rel="noopener">HOME PAGE</a>
+    </div>
+    <hr class="divider">
+    <span class="row-label">Row 2 — Speed Tests</span>
+    <div class="btn-row">
+      <a class="fun-btn btn-4" href="https://fast.com" target="_blank" rel="noopener">Speedtest 1</a>
+      <a class="fun-btn btn-5" href="https://librespeed.org" target="_blank" rel="noopener">Speedtest 2</a>
+      <a class="fun-btn btn-6" href="https://testspeed.moratelindo.co.id" target="_blank" rel="noopener">Speedtest 3</a>
+      <a class="fun-btn btn-7" href="https://www.speedtest.net/id" target="_blank" rel="noopener">Speedtest 4</a>
+    </div>
+    <div class="msg-box">Click any button to open the link in a new tab</div>
+  </div>
+</div>
