@@ -1,0 +1,162 @@
+
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap');
+  .btn-zone { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; padding: 2rem 1rem; }
+
+  /* Clock */
+  .clock-box {
+    background: linear-gradient(135deg, #1a3a6b, #2563eb);
+    border-radius: 1.5rem;
+    padding: 1.2rem 2.5rem;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(37,99,235,0.35);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .clock-time {
+    font-family: 'Fredoka One', cursive;
+    font-size: 3rem;
+    color: #fff;
+    letter-spacing: 0.08em;
+    line-height: 1;
+  }
+  .clock-seconds {
+    font-size: 2rem;
+    color: #93c5fd;
+  }
+  .clock-date {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #bfdbfe;
+    letter-spacing: 0.05em;
+  }
+  .clock-day {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #fde68a;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Frame */
+  .blue-frame {
+    border: 4px solid #378ADD;
+    border-radius: 1.5rem;
+    padding: 2rem 2.5rem;
+    background: #E6F1FB;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 520px;
+    box-sizing: border-box;
+  }
+  .row-label {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #185FA5;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    align-self: flex-start;
+  }
+  .btn-row { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+  .divider { width: 100%; border: none; border-top: 2px dashed #378ADD; margin: 0; }
+  .fun-btn {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    padding: 0.9rem 1.6rem;
+    border: none;
+    border-radius: 2rem;
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s;
+    outline: none;
+    letter-spacing: 0.03em;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .fun-btn:active { transform: scale(0.93) !important; }
+  .btn-1 { background: #f9a826; color: #4a2800; box-shadow: 0 6px 0 #c47800; }
+  .btn-1:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #c47800; }
+  .btn-2 { background: #f05c78; color: #fff; box-shadow: 0 6px 0 #a02040; }
+  .btn-2:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #a02040; }
+  .btn-3 { background: #4bc8b0; color: #00312a; box-shadow: 0 6px 0 #238f7a; }
+  .btn-3:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #238f7a; }
+  .btn-4 { background: #a78bfa; color: #1e0050; box-shadow: 0 6px 0 #6d28d9; }
+  .btn-4:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #6d28d9; }
+  .btn-5 { background: #fb923c; color: #3b0a00; box-shadow: 0 6px 0 #c2410c; }
+  .btn-5:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #c2410c; }
+  .btn-6 { background: #34d399; color: #064e3b; box-shadow: 0 6px 0 #059669; }
+  .btn-6:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #059669; }
+  .btn-7 { background: #60a5fa; color: #1e3a5f; box-shadow: 0 6px 0 #2563eb; }
+  .btn-7:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #2563eb; }
+  .msg-box {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0.6rem 1.4rem;
+    border-radius: 1.5rem;
+    background: #fff;
+    color: #185FA5;
+    border: 0.5px solid #378ADD;
+    text-align: center;
+  }
+</style>
+
+<div class="btn-zone">
+  <!-- Clock -->
+  <div class="clock-box">
+    <div class="clock-day" id="clock-day">Wednesday</div>
+    <div class="clock-time">
+      <span id="clock-hm">00:00</span><span class="clock-seconds">:<span id="clock-s">00</span></span>
+    </div>
+    <div class="clock-date" id="clock-date">01 January 2026</div>
+  </div>
+
+  <!-- Buttons Frame -->
+  <div class="blue-frame">
+    <span class="row-label">Website</span>
+    <div class="btn-row">
+      <a class="fun-btn btn-1" href="https://www.kemkes.go.id" target="_blank" rel="noopener">kemkes.go.id</a>
+      <a class="fun-btn btn-2" href="https://s.id/jakadunet" target="_blank" rel="noopener">JAKADUNET</a>
+      <a class="fun-btn btn-3" href="https://poltekkesjkt2.ac.id" target="_blank" rel="noopener">poltekkesjkt2.ac.id</a>
+    </div>
+    <hr class="divider">
+	<hr class="divider">
+    <span class="row-label">Speed Tests</span>
+    <div class="btn-row">
+      <a class="fun-btn btn-4" href="https://fast.com" target="_blank" rel="noopener">[ fast.com ]</a>
+      <a class="fun-btn btn-5" href="https://librespeed.org" target="_blank" rel="noopener">[ librespeed.org ]</a>
+      <a class="fun-btn btn-6" href="https://fiber.google.com/speedtest/" target="_blank" rel="noopener">[ Google Fiber ]</a>
+      <a class="fun-btn btn-7" href="https://www.speedtest.net/id" target="_blank" rel="noopener">[ Ookla speed ]</a>
+    </div>
+    <div class="msg-box">Selamat Bekerja dan Semoga Sukses</div>
+  </div>
+</div>
+
+<script>
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    const day = days[now.getDay()];
+    const date = `${String(now.getDate()).padStart(2,'0')} ${months[now.getMonth()]} ${now.getFullYear()}`;
+    document.getElementById('clock-hm').textContent = `${h}:${m}`;
+    document.getElementById('clock-s').textContent = s;
+    document.getElementById('clock-day').textContent = day;
+    document.getElementById('clock-date').textContent = date;
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+</script>
